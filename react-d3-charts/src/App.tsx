@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import Chart from "./components/Chart";
+import type { ChartEntry } from "./types";
+import styles from "./App.module.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [charts, setCharts] = useState<ChartEntry[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/data.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as unknown;
+        if (!Array.isArray(json)) throw new Error("Invalid data format");
+
+        // Basic structure validation to prevent runtime issues
+        const valid = (json as any[]).every(
+          (it) =>
+            typeof it?.title === "string" &&
+            Array.isArray(it?.data) &&
+            it.data.every(
+              (row: any) =>
+                Array.isArray(row) &&
+                typeof row[0] === "number" &&
+                (typeof row[1] === "number" ||
+                  row[1] === null ||
+                  (Array.isArray(row[1]) && row[1].length >= 3))
+            )
+        );
+        if (!valid) throw new Error("Invalid row format");
+        setCharts(json as ChartEntry[]);
+      } catch (e: any) {
+        setError(e?.message ?? "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return <div className={styles.loading}>Loading…</div>;
+  if (error)
+    return <div className={styles.error}>Failed to load charts: {error}</div>;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className={styles.app}>
+      {charts.map((entry, idx) => (
+        <div key={idx} className={styles.chartContainer}>
+          <h3 className={styles.chartTitle}>{entry.title}</h3>
+          <Chart entry={entry} width={720} height={300} />
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
