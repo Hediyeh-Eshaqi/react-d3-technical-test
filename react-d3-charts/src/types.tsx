@@ -15,7 +15,7 @@ export function isMultiPoint(p: SinglePoint | MultiPoint): p is MultiPoint {
   return Array.isArray((p as MultiPoint)[1]);
 }
 
-// Determine if the entire chart is multi-series
+// Determine if the entire chart is multi-seriesg
 export function isMultiChart(entry: ChartEntry): boolean {
   if (!entry?.data?.length) return false;
   return Array.isArray((entry.data[0] as MultiPoint)[1]);
