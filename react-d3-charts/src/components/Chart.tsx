@@ -98,6 +98,7 @@ export default function Chart({ entry, width = 720, height = 300 }: Props) {
     const timestamps = entry.data.map((d) => d[0] as number);
     const x0 = d3.extent(timestamps) as [number, number];
     const x = d3.scaleLinear().domain(x0).range([0, innerW]).nice();
+    let currentX = x.copy(); // Track current X scale for accurate zooming
 
     // Y scale (shared across series)
     const yValues = collectYValues(entry);
@@ -113,11 +114,14 @@ export default function Chart({ entry, width = 720, height = 300 }: Props) {
     const xAxisG = root
       .append("g")
       .attr("transform", `translate(0,${innerH})`)
-      .call(d3.axisBottom(x).ticks(6));
+      .call(d3.axisBottom(currentX).ticks(6));
     root.append("g").call(d3.axisLeft(y).ticks(6));
 
     // Build line generators
-    const { single: singleLine, multi: multiLine } = createLineGenerators(x, y);
+    const { single: singleLine, multi: multiLine } = createLineGenerators(
+      currentX,
+      y
+    );
 
     // Group for chart paths, clipped to plot area
     const plotG = root
@@ -148,6 +152,7 @@ export default function Chart({ entry, width = 720, height = 300 }: Props) {
 
     // Re-draw helper used by both brush and double-click
     const redraw = (newX: d3.ScaleLinear<number, number>) => {
+      currentX = newX; // Update current scale
       xAxisG.transition().duration(250).call(d3.axisBottom(newX).ticks(6));
       if (isMultiChart(entry)) {
         const lineWithX = createLineGenerators(newX, y).multi;
@@ -178,7 +183,11 @@ export default function Chart({ entry, width = 720, height = 300 }: Props) {
       .on("end", (event) => {
         const sel = event.selection as [number, number] | null;
         if (!sel) return; // Ignore if no selection
-        const newX = x.copy().domain([x.invert(sel[0]), x.invert(sel[1])]);
+        const newDomain: [number, number] = [
+          currentX.invert(sel[0]),
+          currentX.invert(sel[1]),
+        ];
+        const newX = currentX.copy().domain(newDomain);
         plotG.select<SVGGElement>(".brush").call(brush.move as any, null);
         redraw(newX);
       });
