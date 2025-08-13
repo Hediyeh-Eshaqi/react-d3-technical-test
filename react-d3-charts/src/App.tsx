@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Chart from "./components/Chart";
 import type { ChartEntry } from "./types";
 import styles from "./App.module.css";
+import ChartHint from "./components/ChartHint";
 
 function App() {
   const [charts, setCharts] = useState<ChartEntry[]>([]);
@@ -47,6 +48,7 @@ function App() {
 
   return (
     <div className={styles.app}>
+      <ChartHint />
       {charts.map((entry, idx) => (
         <div key={idx} className={styles.chartContainer}>
           <h3 className={styles.chartTitle}>{entry.title}</h3>

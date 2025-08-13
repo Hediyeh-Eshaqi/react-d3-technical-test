@@ -1,0 +1,10 @@
+.ChartHintBox{
+    font-size: 0.9rem;
+    color: black;
+    margin-bottom: 8px;
+    background-color: white;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}

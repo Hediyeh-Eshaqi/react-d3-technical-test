@@ -2,7 +2,8 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
+  display: flex;
+  justify-content: center;
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
@@ -52,6 +53,28 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.app {
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+}
+
+.chartContainer {
+  margin-bottom: 32px;
+}
+
+.chartTitle {
+  margin: 8px 0;
+}
+
+.loading {
+  padding: 16px;
+}
+
+.error {
+  padding: 16px;
+  color: crimson;
 }
 
 @media (prefers-color-scheme: light) {
